@@ -6,7 +6,7 @@ export const profile = {
     "AI Engineer specialized in LLM applications, AI agents, and workflow automation. Passionate about building intelligent systems that solve real-world problems.",
     "Full-stack developer with expertise in Laravel, Next.js, and Odoo. I bridge the gap between AI innovation and production-ready software.",
   ],
-  image: "/Anouar_img.png",
+  resume: "/AnouarCV.pdf",
   contacts: {
     email: "anouarelissaoui20@gmail.com",
     phone: "+212-629-164157",
@@ -74,6 +74,7 @@ export const profile = {
       tags: ["LangGraph", "Python", "Docker", "Free LLM API", "Pollinations", "ImageRouter"],
       description:
         "AI-powered workflow automating article and content creation with backlinks to drive organic traffic and leads.",
+      links: { github: "https://github.com/anelissao", demo: "#" },
     },
     {
       title: "Portfolio AI Builder",
@@ -81,6 +82,7 @@ export const profile = {
       tags: ["Next.js", "Prisma", "TailwindCSS", "LangChain", "OpenAI API", "Resend"],
       description:
         "Full-stack SaaS app enabling developers to generate and customize professional portfolios using AI.",
+      links: { github: "https://github.com/anelissao", demo: "#" },
     },
     {
       title: "WattuneedMaroc.com",
@@ -88,6 +90,7 @@ export const profile = {
       tags: ["Laravel", "Blade", "ReactJS", "TailwindCSS", "Docker", "PostgreSQL"],
       description:
         "Professional website for a clean energy company with full-stack development, VPS deployment, and AI chatbot integration.",
+      links: { demo: "https://wattuneedmaroc.com" },
     },
   ],
   education: [
