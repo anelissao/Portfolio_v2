@@ -10,23 +10,33 @@ interface SectionProps {
   className?: string;
 }
 
-export default function Section({ id, title, children, className = "" }: SectionProps) {
+export default function Section({
+  id,
+  title,
+  children,
+  className = "",
+}: SectionProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const sectionEase = [0.25, 0.1, 0.25, 1] as const;
 
   return (
     <section id={id} className={`section-padding ${className}`}>
       <div className="mx-auto max-w-6xl">
         <motion.div
           ref={ref}
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          initial={{ opacity: 0, scale: 0.97, y: 30 }}
+          animate={
+            isInView ? { opacity: 1, scale: 1, y: 0 } : {}
+          }
+          transition={{ duration: 0.7, ease: sectionEase }}
         >
-          <h2 className="mb-2 text-center text-3xl font-bold tracking-tight md:text-4xl">
-            <span className="gradient-text">{title}</span>
-          </h2>
-          <div className="mx-auto mb-12 h-1 w-16 rounded-full bg-gradient-to-r from-accent to-secondary" />
+          <div className="mb-12 text-center">
+            <h2 className="mb-3 text-3xl font-bold tracking-tight md:text-4xl">
+              <span className="gradient-text">{title}</span>
+            </h2>
+            <div className="mx-auto h-1 w-16 rounded-full bg-gradient-to-r from-accent to-secondary" />
+          </div>
           {children}
         </motion.div>
       </div>

@@ -2,39 +2,49 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { GraduationCap, Award, Languages, Heart } from "lucide-react";
+import { GraduationCap, Award, Languages, Heart, MapPin } from "lucide-react";
 import { profile } from "@/data/profile";
 import Section from "./Section";
 
-const iconMap: Record<string, React.ReactNode> = {
-  education: <GraduationCap className="h-3.5 w-3.5 text-accent" />,
-  certification: <Award className="h-3.5 w-3.5 text-accent" />,
-  languages: <Languages className="h-3.5 w-3.5 text-accent" />,
-  interests: <Heart className="h-3.5 w-3.5 text-accent" />,
+const levelPercent: Record<string, number> = {
+  Native: 100,
+  "B2": 70,
+  "A2": 35,
 };
 
 export default function Education() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 
+  const stagger = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.08 } },
+  };
+
+  const childVariant = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  };
+
   return (
     <Section id="education" title="Education & More" className="bg-surface/30">
       <div ref={ref} className="mx-auto grid max-w-4xl gap-8 lg:grid-cols-2">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
+          variants={stagger}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
         >
-          <div className="mb-6 flex items-center gap-3">
-            {iconMap.education}
+          <motion.div variants={childVariant} className="mb-6 flex items-center gap-3">
+            <GraduationCap className="h-4 w-4 text-accent" />
             <h3 className="text-sm font-semibold uppercase tracking-wider text-accent">
               Education
             </h3>
-          </div>
+          </motion.div>
           <div className="space-y-4">
             {profile.education.map((edu) => (
-              <div
+              <motion.div
                 key={`${edu.school}-${edu.degree}`}
+                variants={childVariant}
                 className="rounded-lg border border-border/50 bg-surface/30 p-4 transition-all hover:border-accent/20"
               >
                 <div className="mb-1 flex items-start justify-between gap-2">
@@ -46,84 +56,93 @@ export default function Education() {
                   </span>
                 </div>
                 <p className="text-xs text-muted">{edu.degree}</p>
-                <span className="mt-1 inline-block text-[10px] text-muted/50">
+                <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-muted/50">
+                  <MapPin className="h-2.5 w-2.5" />
                   {edu.location}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
 
         <div className="space-y-8">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            variants={stagger}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
           >
-            <div className="mb-6 flex items-center gap-3">
-              {iconMap.certification}
+            <motion.div variants={childVariant} className="mb-6 flex items-center gap-3">
+              <Award className="h-4 w-4 text-accent" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-accent">
                 Certifications
               </h3>
-            </div>
+            </motion.div>
             {profile.certifications.map((cert) => (
-              <div
+              <motion.div
                 key={cert.name}
+                variants={childVariant}
                 className="rounded-lg border border-border/50 bg-surface/30 p-4 transition-all hover:border-accent/20"
               >
                 <h4 className="text-sm font-medium text-foreground">
                   {cert.name}
                 </h4>
                 <p className="mt-1 text-xs text-muted">{cert.description}</p>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            variants={stagger}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
           >
-            <div className="mb-4 flex items-center gap-3">
-              {iconMap.languages}
+            <motion.div variants={childVariant} className="mb-4 flex items-center gap-3">
+              <Languages className="h-4 w-4 text-accent" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-accent">
                 Languages
               </h3>
-            </div>
-            <div className="flex flex-wrap gap-3">
+            </motion.div>
+            <div className="space-y-3">
               {profile.languages.map((lang) => (
-                <div
-                  key={lang.name}
-                  className="rounded-lg border border-border/50 bg-surface/30 px-4 py-2 text-center transition-all hover:border-accent/20"
-                >
-                  <p className="text-sm font-medium text-foreground">
-                    {lang.name}
-                  </p>
-                  <p className="text-xs text-muted">{lang.level}</p>
-                </div>
+                <motion.div key={lang.name} variants={childVariant}>
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-sm text-foreground">{lang.name}</span>
+                    <span className="text-xs text-muted">{lang.level}</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-surface-light">
+                    <motion.div
+                      className="h-full rounded-full bg-gradient-to-r from-accent to-secondary"
+                      initial={{ width: 0 }}
+                      animate={isInView ? { width: `${levelPercent[lang.level] || 50}%` } : {}}
+                      transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                    />
+                  </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.3 }}
+            variants={stagger}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
           >
-            <div className="mb-4 flex items-center gap-3">
-              {iconMap.interests}
+            <motion.div variants={childVariant} className="mb-4 flex items-center gap-3">
+              <Heart className="h-4 w-4 text-accent" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-accent">
                 Interests
               </h3>
-            </div>
+            </motion.div>
             <div className="flex flex-wrap gap-2">
-              {profile.interests.map((interest) => (
-                <span
+              {profile.interests.map((interest, i) => (
+                <motion.span
                   key={interest}
+                  variants={childVariant}
+                  custom={i}
                   className="rounded-full border border-accent/20 bg-accent/5 px-4 py-1.5 text-xs text-accent"
                 >
                   {interest}
-                </span>
+                </motion.span>
               ))}
             </div>
           </motion.div>

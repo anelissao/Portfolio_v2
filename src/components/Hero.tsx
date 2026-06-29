@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { ArrowDown, Mail, Phone, Globe } from "lucide-react";
 import { profile } from "@/data/profile";
+import Particles from "./Particles";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -21,58 +22,125 @@ function LinkedinIcon({ className }: { className?: string }) {
   );
 }
 
+const TAGLINES = [profile.tagline, "LLM Applications & AI Agents", "Full-Stack Development"];
+
 export default function Hero() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
+  const [taglineIndex, setTaglineIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+
+  const tick = useCallback(() => {
+    const current = TAGLINES[taglineIndex];
+    if (!deleting && charIndex < current.length) {
+      setCharIndex((c) => c + 1);
+    } else if (!deleting && charIndex === current.length) {
+      setDeleting(true);
+    } else if (deleting && charIndex > 0) {
+      setCharIndex((c) => c - 1);
+    } else if (deleting && charIndex === 0) {
+      setDeleting(false);
+      setTaglineIndex((i) => (i + 1) % TAGLINES.length);
+    }
+  }, [charIndex, deleting, taglineIndex]);
+
+  useEffect(() => {
+    const current = TAGLINES[taglineIndex];
+    let timeout: ReturnType<typeof setTimeout>;
+
+    if (!deleting && charIndex < current.length) {
+      timeout = setTimeout(tick, 60);
+    } else if (!deleting && charIndex === current.length) {
+      timeout = setTimeout(tick, 2000);
+    } else if (deleting && charIndex > 0) {
+      timeout = setTimeout(tick, 30);
+    } else if (deleting && charIndex === 0) {
+      timeout = setTimeout(tick, 300);
+    }
+
+    return () => clearTimeout(timeout);
+  }, [charIndex, deleting, taglineIndex, tick]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+      transition: { staggerChildren: 0.12, delayChildren: 0.3 },
     },
   };
 
+  const ease = [0.25, 0.1, 0.25, 1] as const;
+
+  const wordVariants = {
+    hidden: { opacity: 0, y: 40, rotateX: -20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      rotateX: 0,
+      transition: { duration: 0.6, delay: i * 0.08, ease },
+    }),
+  };
+
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-  } as const;
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease },
+    },
+  };
+
+  const nameWords = profile.name.split(" ");
 
   return (
     <section
       id="hero"
       className="relative flex min-h-screen items-center justify-center overflow-hidden px-6"
     >
+      <Particles />
+
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-accent/10 blur-[128px]" />
-        <div className="absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full bg-secondary/10 blur-[128px]" />
+        <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-accent/5 blur-[128px]" />
+        <div className="absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full bg-secondary/5 blur-[128px]" />
       </div>
 
       <motion.div
-        ref={ref}
         variants={containerVariants}
         initial="hidden"
-        animate={isInView ? "visible" : "hidden"}
+        animate="visible"
         className="relative z-10 mx-auto max-w-4xl text-center"
       >
         <motion.div variants={itemVariants} className="mb-8 flex justify-center">
-          <div className="relative">
-            <div className="h-32 w-32 overflow-hidden rounded-full border-2 border-accent/30 p-1 md:h-40 md:w-40">
+          <div className="group relative">
+            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-accent to-secondary opacity-30 blur-lg transition-opacity group-hover:opacity-60" />
+            <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-accent/30 p-1 md:h-40 md:w-40">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-accent to-secondary text-5xl font-bold text-white md:text-6xl">
-                {profile.name.split(" ").map((n) => n[0]).join("")}
+                {nameWords.map((n) => n[0]).join("")}
               </div>
             </div>
-            <div className="absolute -right-2 -bottom-2 rounded-full bg-accent p-2">
+            <motion.div
+              className="absolute -right-2 -bottom-2 rounded-full bg-accent p-2"
+              animate={{ scale: [1, 1.15, 1] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            >
               <span className="block h-3 w-3 rounded-full bg-white" />
-            </div>
+            </motion.div>
           </div>
         </motion.div>
 
         <motion.h1
           variants={itemVariants}
-          className="mb-4 text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl"
+          className="mb-4 flex flex-wrap justify-center gap-x-4 text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl"
         >
-          <span className="gradient-text">{profile.name}</span>
+          {nameWords.map((word, i) => (
+            <motion.span
+              key={word}
+              custom={i}
+              variants={wordVariants}
+              className="inline-block gradient-text"
+            >
+              {word}
+            </motion.span>
+          ))}
         </motion.h1>
 
         <motion.p
@@ -84,62 +152,79 @@ export default function Hero() {
 
         <motion.p
           variants={itemVariants}
-          className="mx-auto mb-8 max-w-xl text-sm leading-relaxed text-muted md:text-base"
+          className="mx-auto mb-8 h-7 max-w-xl text-sm text-muted md:text-base"
         >
-          {profile.tagline}
+          {TAGLINES[taglineIndex].slice(0, charIndex)}
+          <span className="animate-blink ml-0.5 inline-block h-4 w-[2px] bg-accent align-middle" />
         </motion.p>
 
-        <motion.div variants={itemVariants} className="mb-10 flex justify-center gap-4">
-          <a
-            href={`mailto:${profile.contacts.email}`}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-light text-muted transition-all hover:border-accent hover:text-accent hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-            aria-label="Email"
-          >
-            <Mail className="h-4 w-4" />
-          </a>
-          <a
-            href={profile.contacts.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-light text-muted transition-all hover:border-accent hover:text-accent hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-            aria-label="GitHub"
-          >
-            <GithubIcon className="h-4 w-4" />
-          </a>
-          <a
-            href={profile.contacts.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-light text-muted transition-all hover:border-accent hover:text-accent hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-            aria-label="LinkedIn"
-          >
-            <LinkedinIcon className="h-4 w-4" />
-          </a>
-          <a
-            href={profile.contacts.portfolio}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-light text-muted transition-all hover:border-accent hover:text-accent hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-            aria-label="Portfolio"
-          >
-            <Globe className="h-4 w-4" />
-          </a>
-          <a
-            href={`tel:${profile.contacts.phone}`}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-light text-muted transition-all hover:border-accent hover:text-accent hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-            aria-label="Phone"
-          >
-            <Phone className="h-4 w-4" />
-          </a>
+        <motion.div
+          variants={itemVariants}
+          className="mb-10 flex justify-center gap-4"
+        >
+          {[
+            {
+              icon: <Mail className="h-4 w-4" />,
+              href: `mailto:${profile.contacts.email}`,
+              label: "Email",
+            },
+            {
+              icon: <GithubIcon className="h-4 w-4" />,
+              href: profile.contacts.github,
+              label: "GitHub",
+            },
+            {
+              icon: <LinkedinIcon className="h-4 w-4" />,
+              href: profile.contacts.linkedin,
+              label: "LinkedIn",
+            },
+            {
+              icon: <Globe className="h-4 w-4" />,
+              href: profile.contacts.portfolio,
+              label: "Portfolio",
+            },
+            {
+              icon: <Phone className="h-4 w-4" />,
+              href: `tel:${profile.contacts.phone}`,
+              label: "Phone",
+            },
+          ].map((link, i) => (
+            <motion.a
+              key={link.label}
+              href={link.href}
+              target={link.href.startsWith("http") ? "_blank" : undefined}
+              rel={
+                link.href.startsWith("http")
+                  ? "noopener noreferrer"
+                  : undefined
+              }
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 + i * 0.08, type: "spring", stiffness: 200 }}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border-light text-muted transition-all hover:border-accent hover:text-accent hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+              aria-label={link.label}
+            >
+              {link.icon}
+            </motion.a>
+          ))}
         </motion.div>
 
-        <motion.div variants={itemVariants}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4 }}
+        >
           <a
             href="#skills"
             className="inline-flex items-center gap-2 rounded-full border border-border-light px-6 py-3 text-sm text-muted transition-all hover:border-accent hover:text-accent"
           >
             Explore my work
-            <ArrowDown className="h-4 w-4 animate-bounce" />
+            <motion.span
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <ArrowDown className="h-4 w-4" />
+            </motion.span>
           </a>
         </motion.div>
       </motion.div>

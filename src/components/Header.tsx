@@ -15,9 +15,20 @@ const navLinks = [
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("hero");
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
+    function onScroll() {
+      setScrolled(window.scrollY > 50);
+      const sections = navLinks.map((l) => l.href.slice(1));
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sections[i]);
+        if (el && el.getBoundingClientRect().top <= 200) {
+          setActiveSection(sections[i]);
+          break;
+        }
+      }
+    }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -33,21 +44,38 @@ export default function Header() {
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <a
           href="#hero"
-          className="text-lg font-bold tracking-tight gradient-text"
+          className="group text-lg font-bold tracking-tight"
         >
-          EA<span className="text-foreground">.</span>
+          <span className="gradient-text">EA</span>
+          <span className="text-foreground transition-colors group-hover:text-accent">
+            .
+          </span>
         </a>
 
-        <div className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm text-muted transition-colors hover:text-accent"
-            >
-              {link.label}
-            </a>
-          ))}
+        <div className="hidden items-center gap-1 md:flex">
+          {navLinks.map((link) => {
+            const isActive = activeSection === link.href.slice(1);
+            return (
+              <a
+                key={link.href}
+                href={link.href}
+                className={`relative px-4 py-2 text-sm transition-colors ${
+                  isActive
+                    ? "text-foreground"
+                    : "text-muted hover:text-foreground"
+                }`}
+              >
+                {link.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="nav-underline"
+                    className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-gradient-to-r from-accent to-secondary"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </a>
+            );
+          })}
         </div>
 
         <button
@@ -72,16 +100,19 @@ export default function Header() {
             transition={{ duration: 0.2 }}
             className="border-b border-border/50 bg-background/95 backdrop-blur-xl md:hidden"
           >
-            <div className="flex flex-col gap-2 px-6 pb-6 pt-2">
-              {navLinks.map((link) => (
-                <a
+            <div className="flex flex-col gap-1 px-4 pb-6 pt-2">
+              {navLinks.map((link, i) => (
+                <motion.a
                   key={link.href}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-lg px-4 py-3 text-sm text-muted transition-colors hover:bg-surface-light hover:text-accent"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="rounded-lg px-4 py-3 text-sm text-muted transition-colors hover:bg-surface-light hover:text-foreground"
                 >
                   {link.label}
-                </a>
+                </motion.a>
               ))}
             </div>
           </motion.div>
